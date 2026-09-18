@@ -8,6 +8,7 @@ from services import (
     get_tank_by_id as get_tank_by_id_service,
     update_tank as update_tank_service,
     delete_tank as delete_tank_service)
+from schemas import TankCreate, TankUpdate, TankRead
 
 from sqlalchemy.orm import Session
 
@@ -16,25 +17,12 @@ app = FastAPI()
 Base.metadata.create_all(engine)
 
 
-class TankCreate(BaseModel):
-    name: str
-    measurement_date: str
-    level_m: float
-    fuel_type: str
-    fuel_volume: float
-
-class TankUpdate(BaseModel):
-    name: str
-    measurement_date: str
-    level_m: float
-    fuel_type: str
-    fuel_volume: float
 
 @app.get('/')
 def root():
     return {'message': 'Server is running'}
 
-@app.get('/tanks')
+@app.get('/tanks', response_model=list[TankRead])
 def get_tanks(
     fuel_type: str | None = None,
     sort: str | None = None,
@@ -46,7 +34,7 @@ def get_tanks(
         sort=sort
         )
     
-@app.get('/tanks/{tank_id}')
+@app.get('/tanks/{tank_id}', response_model=TankRead)
 def get_tank(
     tank_id: int,
     session: Session = Depends(get_session)
@@ -63,7 +51,7 @@ def get_tank(
         )
     return tank
 
-@app.post('/tanks')
+@app.post('/tanks', response_model=TankRead)
 def create_tank(
     tank: TankCreate,
     session: Session = Depends(get_session)
@@ -78,7 +66,7 @@ def create_tank(
     )
 
 
-@app.put('/tanks/{tank_id}')
+@app.put('/tanks/{tank_id}', response_model=TankRead)
 def update_tank(
     tank_id: int,
     tank: TankUpdate,
@@ -102,7 +90,7 @@ def update_tank(
 
     return update_tank
 
-@app.delete('/tanks/{tank_id}')
+@app.delete('/tanks/{tank_id}', response_model=TankRead)
 def delete_tank(
     tank_id: int,
     session: Session = Depends(get_session)
@@ -119,4 +107,3 @@ def delete_tank(
         )
 
     return {'message': 'Tank deleted successfully'}
-
